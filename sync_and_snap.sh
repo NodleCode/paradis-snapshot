@@ -37,19 +37,19 @@ LOCALWS='ws://localhost:9944'
 #   echo
 # done
 
-ONFBLOCK=`  curl -s --request POST   --url $ONFURL  --header 'Content-Type: application/json'   --data '{
+ONFBLOCK=`curl -s --request POST   --url $ONFURL  --header 'Content-Type: application/json'   --data '{
     "jsonrpc": "2.0",
       "method": "chain_getHeader",
       "params": [],
       "id": 1
-    }' | jq .result.number |sed s/\"//g| tr [a-z] [A-Z]`
+    }' | jq .result.number |sed s/\"//g|sed s/0x/16#/`
 
-LOCALBLOCK=`  curl -s --request POST   --url $LOCALURL  --header 'Content-Type: application/json'   --data '{
+LOCALBLOCK=`curl -s --request POST   --url $LOCALURL  --header 'Content-Type: application/json'   --data '{
     "jsonrpc": "2.0",
       "method": "chain_getHeader",
       "params": [],
       "id": 1
-    }' | jq .result.number|sed s/\"//g| tr [a-z] [A-Z]`
+    }' | jq .result.number|sed s/\"//g|sed s/0x/16#/`
 
 HEAD=`curl -s --request POST   --url $LOCALURL  --header 'Content-Type: application/json'   --data '{
     "jsonrpc": "2.0",
@@ -74,7 +74,7 @@ REV=`curl -s --request POST  --url $LOCALURL  --header 'Content-Type: applicatio
       "id": 1
     }' | jq .result.specVersion`
 TIME=`date --iso-8601=seconds --utc`
-TAG=`echo S$TIME |sed s/\+00:00//|sed s/[:-]//g`_SPEC_${REV}_AT_$LOCALBLOCK
+TAG=`echo S$TIME |sed s/\+00:00//|sed s/[:-]//g`_SPEC_${REV}_AT_$(( $LOCALBLOCK ))
 echo Time: $TIME > rellog
 echo -n Rev:  >>rellog
 
