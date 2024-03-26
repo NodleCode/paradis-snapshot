@@ -59,9 +59,14 @@ HEAD=`curl -s --request POST   --url $LOCALURL  --header 'Content-Type: applicat
     }' | jq .result|tr -d \"`
 
 DIFF=`echo $(( $ONFBLOCK-$LOCALBLOCK  ))| tr -d -`
-echo Hello head=$HEAD $ONFBLOCK-$LOCALBLOCK  $DIFF $(( $DIFF >10 )) 
 
-# TODO use diff to wait until local is in sync
+if [[ $DIFF -gt 10 ]]
+then
+  echo ERROR: Local chain out of sync
+  echo head=$HEAD $ONFBLOCK-$LOCALBLOCK  $DIFF 
+  exit 0
+fi
+
 REV=`curl -s --request POST  --url $LOCALURL  --header 'Content-Type: application/json'   --data '{
     "jsonrpc": "2.0",
       "method": "state_getRuntimeVersion",
@@ -77,8 +82,12 @@ echo $REV >> rellog
 echo Tag: $TAG >>rellog
 echo ChainHead: $HEAD >>rellog
 cat rellog
+try-runtime create-snapshot paradis-snap-full.snap -u $LOCALWS --at $HEAD
 
+bzip2 paradis-snap-full.snap 
 git commit rellog -m AutomaticRelease
 git tag $TAG
-gh release create $TAG -F rellog 
-try-runtime create-snapshot paradis-snap-full.snap -u $LOCALWS --at $HEAD
+git push
+git push origin --tags $TAG
+gh release create $TAG -F rellog
+gh release upload $TAG paradis-snap-full.snap.bz2
