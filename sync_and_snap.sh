@@ -82,12 +82,12 @@ echo $REV >> rellog
 echo Tag: $TAG >>rellog
 echo ChainHead: $HEAD >>rellog
 cat rellog
-try-runtime create-snapshot paradis-snapshot-full.snap -u $LOCALWS --at $HEAD
+try-runtime create-snapshot paradis-snapshot-full -u $LOCALWS --at $HEAD
 
-bzip2 paradis-snapshot-full.snap 
+bzip2 paradis-snapshot-full 
 git commit rellog -m AutomaticRelease
 git tag $TAG
 git push
 git push origin --tags $TAG
 gh release create $TAG -F rellog
-gh release upload $TAG paradis-snapshot-full.snap.bz2
+gh release upload $TAG paradis-snapshot-full.bz2
