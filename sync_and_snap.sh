@@ -4,38 +4,37 @@ ONFURL='https://node-6957502816543653888.lh.onfinality.io/ws?apikey=09b04494-313
 LOCALURL='http://localhost:9944'
 LOCALWS='ws://localhost:9944'
 
+# Show some debug info before we start script for now:
+for  URL in $LOCALURL $ONFURL
+do
+  curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
+    "jsonrpc": "2.0",
+      "method": "state_getRuntimeVersion",
+      "params": [],
+      "id": 1
+    }' | jq .result.specVersion | sed 's/^/try-runtime-snapshot-paradis-spec-/'
 
-# # Show some debug info before we start script for now:
-# for  URL in $LOCALURL $ONFURL
-# do
-#   curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
-#     "jsonrpc": "2.0",
-#       "method": "state_getRuntimeVersion",
-#       "params": [],
-#       "id": 1
-#     }' | jq .result.specVersion | sed 's/^/try-runtime-snapshot-paradis-spec-/'
+  curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
+    "jsonrpc": "2.0",
+      "method": "chain_getFinalizedHead",
+      "params": [],
+      "id": 1
+    }' | jq .result
+  curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
+    "jsonrpc": "2.0",
+      "method": "system_health",
+      "params": [],
+      "id": 1
+    }' | jq .result.isSyncing
 
-#   curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
-#     "jsonrpc": "2.0",
-#       "method": "chain_getFinalizedHead",
-#       "params": [],
-#       "id": 1
-#     }' | jq .result
-#   curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
-#     "jsonrpc": "2.0",
-#       "method": "system_health",
-#       "params": [],
-#       "id": 1
-#     }' | jq .result.isSyncing
-
-#   curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
-#     "jsonrpc": "2.0",
-#       "method": "chain_getHeader",
-#       "params": [],
-#       "id": 1
-#     }' | jq .result.number
-#   echo
-# done
+  curl -s --request POST   --url $URL  --header 'Content-Type: application/json'   --data '{
+    "jsonrpc": "2.0",
+      "method": "chain_getHeader",
+      "params": [],
+      "id": 1
+    }' | jq .result.number
+  echo
+done
 
 ONFBLOCK=`curl -s --request POST   --url $ONFURL  --header 'Content-Type: application/json'   --data '{
     "jsonrpc": "2.0",
@@ -65,6 +64,17 @@ then
   echo ERROR: Local chain out of sync
   echo head=$HEAD $ONFBLOCK-$LOCALBLOCK  $DIFF 
   exit 0
+fi
+
+if [[ x$HEAD == "x" ]]
+then
+   echo Head is none
+   exit 1
+fi
+if [[ x$LOCALURL == "x" ]]
+then
+   echo Local URL is none
+   exit 1
 fi
 
 REV=`curl -s --request POST  --url $LOCALURL  --header 'Content-Type: application/json'   --data '{
