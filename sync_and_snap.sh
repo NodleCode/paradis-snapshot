@@ -98,6 +98,6 @@ bzip2 paradis-snapshot-full
 git commit rellog -m AutomaticRelease
 git tag $TAG
 git push
-git push origin --tags $TAG
+git push origin $TAG
 gh release create $TAG -F rellog
 gh release upload $TAG paradis-snapshot-full.bz2
